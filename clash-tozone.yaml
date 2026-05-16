@@ -4,6 +4,9 @@ allow-lan: true
 mode: Rule
 log-level: info
 external-controller: :9090
+# config.yaml 顶部确保开启
+unified-delay: true
+tcp-concurrent: true
 dns:
   enabled: true
   nameserver:
@@ -20,21 +23,41 @@ proxy-groups:
   - name: 🚀 节点选择
     type: select
     proxies:
+      - ♻️ 自动选择
       - DIRECT
       - __ALL_PROXIES__
   - name: shz1
     type: select
     proxies:
-      - shz1-reality-brutal
-      - shz1-ss
       - DIRECT
+      - __ALL_PROXIES__
+  - name: ♻️ 自动选择
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+    proxies:
+      - __ALL_PROXIES__
   - name: 🌍 国外媒体
+    type: select
+    proxies:
+      - 🚀 节点选择
+      - ♻️ 自动选择
+      - 🎯 全球直连
+      - __ALL_PROXIES__
+  - name: 📲 电报信息
     type: select
     proxies:
       - 🚀 节点选择
       - 🎯 全球直连
       - __ALL_PROXIES__
-  - name: 📲 电报信息
+  - name: Ⓜ️ 微软服务
+    type: select
+    proxies:
+      - 🎯 全球直连
+      - 🚀 节点选择
+      - __ALL_PROXIES__
+  - name: 🍎 苹果服务
     type: select
     proxies:
       - 🚀 节点选择
@@ -45,6 +68,7 @@ proxy-groups:
     proxies:
       - DIRECT
       - 🚀 节点选择
+      - ♻️ 自动选择
   - name: 🛑 全球拦截
     type: select
     proxies:
@@ -55,11 +79,17 @@ proxy-groups:
     proxies:
       - REJECT
       - DIRECT
+  - name: 🆎 AdBlock
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
   - name: 🐟 漏网之鱼
     type: select
     proxies:
       - 🚀 节点选择
       - 🎯 全球直连
+      - ♻️ 自动选择
       - __ALL_PROXIES__
 
 rules:
@@ -67,12 +97,16 @@ rules:
   - RULE-SET,LocalAreaNetwork,🎯 全球直连
   - RULE-SET,BanAD,🛑 全球拦截
   - RULE-SET,BanProgramAD,🍃 应用净化
+  - RULE-SET,BanEasyList,🆎 AdBlock
+  - RULE-SET,BanEasyListChina,🆎 AdBlock
+  - RULE-SET,BanEasyPrivacy,🆎 AdBlock
   - RULE-SET,GoogleCN,🎯 全球直连
   - RULE-SET,SteamCN,🎯 全球直连
-  - RULE-SET,Telegram,📲 电报信息
+  - RULE-SET,Microsoft,Ⓜ️ 微软服务
+  - RULE-SET,Apple,🍎 苹果服务
   - RULE-SET,ProxyMedia,🌍 国外媒体
+  - RULE-SET,Telegram,📲 电报信息
   - RULE-SET,ProxyLite,🚀 节点选择
-  - RULE-SET,Apple,🎯 全球直连
   - RULE-SET,ChinaDomain,🎯 全球直连
   - RULE-SET,ChinaCompanyIp,🎯 全球直连
   - GEOIP,CN,🎯 全球直连
@@ -100,6 +134,27 @@ rule-providers:
     format: text
     path: ./providers/BanProgramAD.txt
     interval: 86400
+  BanEasyList:
+    type: http
+    behavior: classical
+    url: rules/ACL4SSR/Clash/BanEasyList.list
+    format: text
+    path: ./providers/BanEasyList.txt
+    interval: 86400
+  BanEasyListChina:
+    type: http
+    behavior: classical
+    url: rules/ACL4SSR/Clash/BanEasyListChina.list
+    format: text
+    path: ./providers/BanEasyListChina.txt
+    interval: 86400
+  BanEasyPrivacy:
+    type: http
+    behavior: classical
+    url: rules/ACL4SSR/Clash/BanEasyPrivacy.list
+    format: text
+    path: ./providers/BanEasyPrivacy.txt
+    interval: 86400
   GoogleCN:
     type: http
     behavior: classical
@@ -114,12 +169,19 @@ rule-providers:
     format: text
     path: ./providers/SteamCN.txt
     interval: 86400
-  Telegram:
+  Microsoft:
     type: http
     behavior: classical
-    url: rules/ACL4SSR/Clash/Telegram.list
+    url: rules/ACL4SSR/Clash/Microsoft.list
     format: text
-    path: ./providers/Telegram.txt
+    path: ./providers/Microsoft.txt
+    interval: 86400
+  Apple:
+    type: http
+    behavior: classical
+    url: rules/ACL4SSR/Clash/Apple.list
+    format: text
+    path: ./providers/Apple.txt
     interval: 86400
   ProxyMedia:
     type: http
@@ -128,19 +190,19 @@ rule-providers:
     format: text
     path: ./providers/ProxyMedia.txt
     interval: 86400
+  Telegram:
+    type: http
+    behavior: classical
+    url: rules/ACL4SSR/Clash/Telegram.list
+    format: text
+    path: ./providers/Telegram.txt
+    interval: 86400
   ProxyLite:
     type: http
     behavior: classical
     url: rules/ACL4SSR/Clash/ProxyLite.list
     format: text
     path: ./providers/ProxyLite.txt
-    interval: 86400
-  Apple:
-    type: http
-    behavior: classical
-    url: rules/ACL4SSR/Clash/Apple.list
-    format: text
-    path: ./providers/Apple.txt
     interval: 86400
   ChinaDomain:
     type: http
